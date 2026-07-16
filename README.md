@@ -54,7 +54,7 @@ A simple command-line Expense Tracker that helps users record and manage their d
 
 ## 🛠️ Technologies Used
 
-- Python 3.x
+- Python 3.13.12
 - Text Files (.txt)
 - Git & GitHub
 
@@ -64,12 +64,12 @@ A simple command-line Expense Tracker that helps users record and manage their d
 
 ```text
 Python-Projects/
-│
-├── expense_tracker.py
-├── student_manager.py
-├── student.txt
-├── expenses.txt
-└── README.md
+
+1. expense_tracker.py
+2. student_manager.py
+3. student.txt
+4. expenses.txt
+5. README.md
 ```
 
 ---

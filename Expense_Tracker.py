@@ -243,7 +243,6 @@ def category_totals(expenses):
         print("No expense records found.")
 
     print()
-
 def main(): #Main function that serves as the entry point for the Expense Tracker application.
     expenses = load_expenses()
 

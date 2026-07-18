@@ -1,12 +1,25 @@
 from datetime import datetime
 
+def display_menu(): #This function displays the main menu of the Expense Tracker application.
+    print("\n--- Expense Tracker Menu ---")
+    print("1. Add Expense")
+    print("2. View Expenses")
+    print("3. Total Expenses")
+    print("4. Clear Expenses")
+    print("5. Search Expense")
+    print("6. Delete Expense")
+    print("7. Edit Expense")
+    print("8. Current Balance")
+    print("9. Category Totals")
+    print("10. Exit")
+
 def load_expenses(filename="expenses.txt"): #This function loads expenses from a file and returns them as a list of dictionaries.
     expenses = []
 
-    try: #Try to open the file and read its contents. If the file does not exist, it will be created when saving expenses.
+    try: 
         with open(filename, "r") as file:
             for line in file:
-               try: #Try to split each line into its components and convert the amount to a float. If the line is invalid, it will be skipped.
+               try: 
                     transaction, category, amount, date, time = line.strip().split(",")
                     expenses.append({
                         "transaction": transaction,
@@ -15,27 +28,27 @@ def load_expenses(filename="expenses.txt"): #This function loads expenses from a
                         "date": date,
                         "time": time
                     })
-               except ValueError: #Exception handling for invalid lines in th file.
+               except ValueError:
                     print(f"Skipping invalid line in {filename}: {line.strip()}")
 
-    except FileNotFoundError: #Exception handling for file not found.
+    except FileNotFoundError:
         pass
 
     return expenses
 
 
 def save_expenses(expenses, filename="expenses.txt"): #This function saves the expenses to a file. 
-    try: #Try to open the file in write mode and write each expense as a line in the file. 
+    try:
         with open(filename, "w") as file:
             for expense in expenses:
                  file.write(
                 f"{expense['transaction']},{expense['category']},{expense['amount']},{expense['date']},{expense['time']}\n"
             )
-    except IOError: #Exception handling for file write errors. 
+    except IOError:
         print("Error saving expenses.")
     
 def add_expense(expenses): #This function adds a new expense to the list of expenses. 
-    while True: #This loop will continue until the user enters a valid transaction type.
+    while True: 
         transaction = input("Enter transaction type (Income/Expense): ").strip().capitalize()
 
         if transaction in ("Income", "Expense"):
@@ -43,7 +56,7 @@ def add_expense(expenses): #This function adds a new expense to the list of expe
 
         print("Please enter either 'Income' or 'Expense'.")
 
-    while True: #This loop will continue until the user enters a valid category.
+    while True:
         category = input("Enter category: ").strip().capitalize()
 
         if category:
@@ -51,7 +64,7 @@ def add_expense(expenses): #This function adds a new expense to the list of expe
 
         print("Category cannot be empty.")
 
-    while True: #This loop will continue until the user enters a valid amount.
+    while True: 
         try:
             amount = float(input("Enter amount: ₹"))
 
@@ -68,15 +81,14 @@ def add_expense(expenses): #This function adds a new expense to the list of expe
 
     expenses.append({ 
         "transaction": transaction,
-        "category": category,                     #This line adds the transaction type to the expense dictionary.
+        "category": category,      #This line adds the transaction type to the expense dictionary.
         "amount": amount,
         "date": now.strftime("%d-%m-%Y"),
         "time": now.strftime("%I:%M:%S %p")
     })
 
     print("-------------------------")
-    print(f"{transaction} added successfully.") #Shows a message indicating that the transaction has been added successfully.
-    print("-------------------------")
+    print(f"{transaction} added successfully.")
 
 
 def view_expenses(expenses): #This function displays all the recorded expenses in a formatted manner. If there are no expenses, it informs the user accordingly.
@@ -84,7 +96,7 @@ def view_expenses(expenses): #This function displays all the recorded expenses i
         print("No expenses recorded yet.\n")
         return
 
-    print("\n--- All Expenses ---") #Shows all recorded expenses in a formatted manner.
+    print("\n--- All Expenses ---")
     for i, expense in enumerate(expenses, start=1):
         print(f"{i}. Transaction: {expense['transaction']}\n   Category: {expense['category']}\n   Amount: ₹{expense['amount']:.2f}\n   Date: {expense['date']}\n   Time: {expense['time']}")
     print()
@@ -99,7 +111,7 @@ def total_expenses(expenses): #This function calculates and displays the total a
     print(f"Total Expenses: ₹{total:.2f}\n")
 
 
-def clear_expenses(expenses, filename="tracker.txt"): #This function clears all recorded expenses after confirming with the user.
+def clear_expenses(expenses, filename="expenses.txt"): #This function clears all recorded expenses after confirming with the user.
     confirm = input("Are you sure? (yes/no): ").lower()
 
     for expense in expenses:
@@ -157,7 +169,7 @@ def edit_expense(expenses): #This function allows the user to edit an existing e
 
     view_expenses(expenses) #Function calling.
 
-    try: #Editing an expense starts from here.
+    try:
         index = int(input("Enter expense number to edit: ")) - 1
 
         if index < 0 or index >= len(expenses):
@@ -208,13 +220,13 @@ def current_balance(expenses): #This function calculates and displays the curren
 
     balance = total_income - total_expense
 
-    print("\n------ Current Balance ------") #Shows the current balance in a formatted manner.
+    print("\n------ Current Balance ------")
     print(f"Total Income   : ₹{total_income:.2f}")
     print(f"Total Expenses : ₹{total_expense:.2f}")
     print(f"Current Balance: ₹{balance:.2f}")
     print("="*15)
 
-def category_totals(expenses):
+def category_totals(expenses): #This function calculates and displays the total amounts for each category of income and expenses separately.
     expense_totals = {}
     income_totals = {}
 
@@ -246,22 +258,12 @@ def category_totals(expenses):
 def main(): #Main function that serves as the entry point for the Expense Tracker application.
     expenses = load_expenses()
 
-    continue_choice = "yes"
     print("="*15)
     print("Expense Tracker") #Formatting the title of the application.
     print("="*15)
 
-    while continue_choice in ["yes", "y", "1"]:
-        print("\n1. Add Expense")
-        print("2. View Expenses")
-        print("3. Total Expenses")
-        print("4. Clear Expenses")
-        print("5. Search Expense")
-        print("6. Delete Expense")
-        print("7. Edit Expense")
-        print("8. Current Balance")
-        print("9. Category Totals")
-        print("10. Exit")
+    while True:
+        display_menu()
 
         choice = input("Choose an option (1-10): ")
 
@@ -291,8 +293,7 @@ def main(): #Main function that serves as the entry point for the Expense Tracke
                 break
             case _:
                 print("Invalid choice. Please try again.")
-        continue_choice = input("Do you want to continue? (yes/no): ").lower()
-
+        
 if __name__ == "__main__": #Checks if the script is being run directly (not imported) and calls the main function. 
     try:
         main()

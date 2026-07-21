@@ -11,13 +11,13 @@ Welcome to my **Python Projects Collection**! This repository showcases beginner
 | ✅ **To-Do List** | A task management application for organizing daily activities. | Add tasks, mark as completed, remove tasks, view pending tasks |
 | 📒 **Contact Book** | A contact management system for storing personal information. | Add, search, update, delete contacts |
 | 🎓 **Student Manager** | A student record management system for maintaining student information. | Add student details, update records, search students, delete records |
+| 📕 **Library Management** | A library management system for maintaining library information. | Add, View, Search, Issue, Return, Delete books | 
 
 ---
 
 ## 🛠️ Technologies Used
 
 - Python 3.13.12
-- Object-Oriented Programming (where applicable)
 - File Handling
 - Functions & Modules
 - Command Line Interface (CLI)
@@ -29,11 +29,12 @@ Welcome to my **Python Projects Collection**! This repository showcases beginner
 ```
 Python-Projects/
 │
-├── Expense_Tracker/
-├── Password_Generator/
-├── To_Do_List/
 ├── Contact_Book/
+├── Expense_Tracker/
+├── Library_Management/
+├── password_management/
 ├── Student_Manager/
+├── To_Do_List/
 └── README.md
 ```
 ## 🚀 How to Run
@@ -47,22 +48,28 @@ git clone https://github.com/<your-username>/python_projects.git
 2. Navigate to the project folder:
 
 ```bash
-cd Python-Projects
+cd python_projects
 ```
 
 3. Run any project:
 
 ```bash
-python student_manager.py
+python Student_Manager.py
 ```
 
 or
 
 ```bash
-python expense_tracker.py
+python Expense_Tracker.py
 ```
 
----s
+or
+
+```bash
+python Library_Management.py
+```
+
+---
 
 ---
 

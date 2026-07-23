@@ -118,6 +118,7 @@ def view_saved_passwords():
                 print(f"   Strength : {strength}\n")
 
                 count += 1
+                print("-"*20)
 
     except FileNotFoundError:
         print("No saved passwords found.")
@@ -147,9 +148,9 @@ def delete_saved_password():
 def copy_to_clipboard(text):
     try:
         pyperclip.copy(text)
-        print("-"*20)
+        print("-"*30)
         print("Password copied to clipboard.")
-        print("-"*20)
+        print("-"*30)
     except Exception as e:
         print("-"*20)
         print("Error copying to clipboard:",e)
@@ -161,9 +162,9 @@ def ask_and_copy(password):
     if choice == "yes" or choice == "y":
         copy_to_clipboard(password)
     else:
-        print("-"*20)
+        print("-"*12)
         print("Copy skipped.")
-        print("-"*20)
+        print("-"*12)
 
 
 def copy_saved_password():
@@ -202,9 +203,9 @@ def copy_saved_password():
 
             pyperclip.copy(password)
 
-            print("-" * 20)
+            print("-" * 30)
             print("Password copied to clipboard.")
-            print("-" * 20)
+            print("-" * 30)
 
         else:
             print("Invalid index.")
@@ -219,7 +220,7 @@ def main():
 
    while True:
         
-        print("\n----- Password Generator -----")
+        print("-"*18 + "\nPassword Generator\n" + "-"*18)
         print("1. Generate Password")
         print("2. View Saved Passwords")
         print("3. Delete Saved Password")
@@ -238,7 +239,13 @@ def main():
                 password = generate_password(length, include_numbers, include_symbols)
                 strength = check_strength(password)
                 display_password(userappname, username, password, strength)
-                save_to_file(userappname, username, password, strength)
+                choice = input("Do you want to save password(y/n):").lower()
+                if choice == 'y':
+                    save_to_file(userappname, username, password, strength)
+                else:
+                    print("-"*38)
+                    print("Thank you for using password generator!!")
+                    print("-"*38)
                 ask_and_copy(password)
         elif choice == "2":
             view_saved_passwords()

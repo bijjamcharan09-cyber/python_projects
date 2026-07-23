@@ -1,6 +1,6 @@
 import ast
 
-FILENAME = "contacts.txt"
+FILENAME = "data/contacts.txt"
 
 def display_menu(): #This function displays the main menu of the contact book application.
     print("\n===== Contact Book Menu =====")

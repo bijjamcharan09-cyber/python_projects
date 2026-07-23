@@ -13,7 +13,7 @@ def display_menu(): #This function displays the main menu of the Expense Tracker
     print("9. Category Totals")
     print("10. Exit")
 
-def load_expenses(filename="expenses.txt"): #This function loads expenses from a file and returns them as a list of dictionaries.
+def load_expenses(filename="data/expenses.txt"): #This function loads expenses from a file and returns them as a list of dictionaries.
     expenses = []
 
     try: 
@@ -37,7 +37,7 @@ def load_expenses(filename="expenses.txt"): #This function loads expenses from a
     return expenses
 
 
-def save_expenses(expenses, filename="expenses.txt"): #This function saves the expenses to a file. 
+def save_expenses(expenses, filename="data/expenses.txt"): #This function saves the expenses to a file. 
     try:
         with open(filename, "w") as file:
             for expense in expenses:
@@ -111,7 +111,7 @@ def total_expenses(expenses): #This function calculates and displays the total a
     print(f"Total Expenses: ₹{total:.2f}\n")
 
 
-def clear_expenses(expenses, filename="expenses.txt"): #This function clears all recorded expenses after confirming with the user.
+def clear_expenses(expenses, filename="data/expenses.txt"): #This function clears all recorded expenses after confirming with the user.
     confirm = input("Are you sure? (yes/no): ").lower()
 
     for expense in expenses:

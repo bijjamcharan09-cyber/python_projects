@@ -85,7 +85,7 @@ def check_strength(password):
 
 def save_to_file(userappname, username, password, strength):
 
-    file = open("passwords.txt", "a")
+    file = open("data/passwords.txt", "a")
 
     file.write(f"{userappname}|{username}|{password} ({strength})\n")
 
@@ -103,7 +103,7 @@ def view_saved_passwords():
     get_lock_password()
     try:
 
-        with open("passwords.txt", "r") as file:
+        with open("data/passwords.txt", "r") as file:
 
             print("\n----- Saved Passwords -----\n")
 
@@ -147,10 +147,10 @@ def delete_saved_password():
 
     found = False
 
-    with open("passwords.txt", "r") as file:
+    with open("data/passwords.txt", "r") as file:
         lines = file.readlines()
 
-    with open("passwords.txt", "w") as file:
+    with open("data/passwords.txt", "w") as file:
         for line in lines:
             parts = line.strip().split("|")
 
@@ -196,7 +196,7 @@ def copy_saved_password():
 
     try:
 
-        with open("passwords.txt", "r") as file:
+        with open("data/passwords.txt", "r") as file:
             lines = file.readlines()
 
         if not lines:
@@ -269,7 +269,7 @@ def main():
                     save_to_file(userappname, username, password, strength)
                 else:
                     print("-"*38)
-                    print("Thank you for using password generator!!")
+                    print("Thank you for using password generator")
                     print("-"*38)
                 ask_and_copy(password)
         elif choice == "2":

@@ -1,6 +1,6 @@
 import ast
 
-FILENAME = "books.txt"
+FILENAME = "data/books.txt"
 
 
 def load_books():

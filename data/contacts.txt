@@ -1,4 +1,0 @@
-{'name': 'Sneha', 'phone': '9891015733'}
-{'name': 'Charan', 'phone': '9182515432'}
-{'name': 'Sara', 'phone': '9871815733'}
-{'name': 'Myself', 'phone': '9871615733'}

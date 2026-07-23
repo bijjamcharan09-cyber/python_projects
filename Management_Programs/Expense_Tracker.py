@@ -1,5 +1,5 @@
 from datetime import datetime
-
+filename = "data/expenses.txt"
 def display_menu(): #This function displays the main menu of the Expense Tracker application.
     print("\n--- Expense Tracker Menu ---")
     print("1. Add Expense")

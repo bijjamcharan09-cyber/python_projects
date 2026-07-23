@@ -1,5 +1,5 @@
 from datetime import datetime
-
+filename = "data/to_do.txt"
 def display_menu():  # This function displays the main menu options to the user.
     print("\n===== TO-DO LIST =====")
     print("1. Add Task")
@@ -11,7 +11,7 @@ def load_tasks(filename="data/to_do.txt"): #This function loads all the previous
     tasks = []
 
     try:
-        with open(filename, "r", encoding="utf-8") as file:
+        with open(filename, "r") as file:
             for line in file:
                 task, date, time = line.strip().split(",")
 
@@ -63,7 +63,7 @@ def view_tasks(tasks):  # This function displays all the tasks.
 def save_tasks(tasks, filename="data/to_do.txt"): #This function saves the tasks into a file and uses exception handling.
 
     try:
-        with open(filename, "w", encoding="utf-8") as file:
+        with open(filename, "w") as file:
 
             for task in tasks:
 
@@ -92,11 +92,11 @@ def main():  # This is the main function.
         match choice:
              case "1":
                  add_task(tasks)
-                 save_tasks(tasks,filename="to_do.txt")
+                 save_tasks(tasks,filename="data/to_do.txt")
              case "2":
                  view_tasks(tasks)
              case "3":
-                 clear_tasks(tasks,filename = "to_do.txt")
+                 clear_tasks(tasks,filename = "data/to_do.txt")
              case "4":
                  print("Exiting.")
                  break

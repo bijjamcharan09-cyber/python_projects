@@ -3,12 +3,21 @@ import string as st
 import pyperclip
 
 def get_userappname(): #This function prompts the user to enter a userappname and returns it.
-    userappname = input("Enter userappname: ")
+    userappname = input("Enter userappname: ").capitalize()
     return userappname
 
 def get_username(): #This function prompts the user to enter a username and returns it.
     username = input("Enter username: ")
     return username
+
+def get_lock_password(): #This function prompts the user to enter password.
+    user_password = "91173088"
+    entered_password = input("Enter password:")
+    if user_password == entered_password:
+        return True
+    else:
+        return False
+
 def get_password_options(): #This function prompts the user to enter password options and returns them.
     length = int(input("Enter password length: "))
 
@@ -19,6 +28,7 @@ def get_password_options(): #This function prompts the user to enter password op
     password_count = int(input("How many passwords do you want to generate? "))
 
     return length, include_numbers, include_symbols, password_count
+
 def generate_password(length, include_numbers, include_symbols): #This function generates a password based on the specified options and returns it.
 
     characters = st.ascii_letters
@@ -34,10 +44,10 @@ def generate_password(length, include_numbers, include_symbols): #This function 
 
     if include_symbols == "yes":
         characters += st.punctuation
-        password.append(rd.choice(st.punctuation))
+        password.append(rd.choice(st.punctuation.replace("|", "")))
 
     while len(password) < length:
-        password.append(rd.choice(characters))
+        password.append(rd.choice(characters.replace("|", "")))
 
     rd.shuffle(password)
 
@@ -77,9 +87,10 @@ def save_to_file(userappname, username, password, strength):
 
     file = open("passwords.txt", "a")
 
-    file.write(f"{userappname}:{username} : {password} ({strength})\n")
+    file.write(f"{userappname}|{username}|{password} ({strength})\n")
 
     file.close()
+
 def display_password(userappname, username, password, strength):
 
     print("\n----- Password Details -----")
@@ -89,27 +100,32 @@ def display_password(userappname, username, password, strength):
     print("Strength :", strength)
 
 def view_saved_passwords():
+    get_lock_password()
     try:
+
         with open("passwords.txt", "r") as file:
+
             print("\n----- Saved Passwords -----\n")
 
             count = 1
 
             for line in file:
+
                 line = line.strip()
 
                 if not line:
-                    continue  # Skip blank lines
-
-                parts = line.split(":")
-
-                if len(parts) < 3:
-                    print(f"Invalid entry: {line}")
                     continue
 
-                appname = parts[0].strip()
-                username = parts[1].strip()
-                password = parts[2].split(" (")[0].strip()
+                parts = line.split("|")
+
+                if len(parts) != 3:
+                    print("Invalid entry:", line)
+                    continue
+
+                appname = parts[0]
+                username = parts[1]
+
+                password = parts[2].split(" (")[0]
                 strength = parts[2].split("(")[1].replace(")", "")
 
                 print(f"{count}. App Name : {appname}")
@@ -118,13 +134,16 @@ def view_saved_passwords():
                 print(f"   Strength : {strength}\n")
 
                 count += 1
-                print("-"*20)
+                print("-"*25)
+
+            if count == 1:
+                print("No saved passwords.")
 
     except FileNotFoundError:
         print("No saved passwords found.")
 
 def delete_saved_password():
-    userappname = input("Enter useapprname to delete: ").lower()
+    userappname = input("Enter app name to delete: ").lower()
 
     found = False
 
@@ -133,7 +152,12 @@ def delete_saved_password():
 
     with open("passwords.txt", "w") as file:
         for line in lines:
-            saved_app = line.split(":")[0].lower()
+            parts = line.strip().split("|")
+
+            if len(parts) != 3:
+                continue
+
+            saved_app = parts[0].lower()
 
             if saved_app != userappname:
                 file.write(line)
@@ -143,7 +167,7 @@ def delete_saved_password():
     if found:
         print("Password(s) deleted successfully.")
     else:
-        print("Username not found.")
+        print("App name not found.")
 
 def copy_to_clipboard(text):
     try:
@@ -168,7 +192,10 @@ def ask_and_copy(password):
 
 
 def copy_saved_password():
+    get_lock_password()
+
     try:
+
         with open("passwords.txt", "r") as file:
             lines = file.readlines()
 
@@ -178,34 +205,32 @@ def copy_saved_password():
 
         print("\n----- Saved Passwords -----")
 
-        for i, line in enumerate(lines, start=1):
+        valid = []
+
+        for line in lines:
+
             line = line.strip()
 
             if not line:
                 continue
 
-            parts = line.split(":")
+            parts = line.split("|")
 
-            if len(parts) < 3:
-                print(f"Invalid entry: {line}")
+            if len(parts) != 3:
                 continue
 
-            appname = parts[0].strip()
-            username = parts[1].strip()
+            valid.append(parts)
 
-            print(f"{i}. App: {appname} | Username: {username}")
+        for i, parts in enumerate(valid, start=1):
+            print(f"{i}. App: {parts[0]} | Username: {parts[1]}")
 
         index = int(input("\nEnter password index: "))
 
-        if 1 <= index <= len(lines):
-            line = lines[index - 1]
-            password = line.split(":")[2].split(" (")[0].strip()
+        if 1 <= index <= len(valid):
 
-            pyperclip.copy(password)
+            password = valid[index-1][2].split(" (")[0]
 
-            print("-" * 30)
-            print("Password copied to clipboard.")
-            print("-" * 30)
+            copy_to_clipboard(password)
 
         else:
             print("Invalid index.")
@@ -217,7 +242,7 @@ def copy_saved_password():
         print("Please enter a valid number.")
 
 def main():
-
+   password = None
    while True:
         
         print("-"*18 + "\nPassword Generator\n" + "-"*18)
@@ -248,17 +273,26 @@ def main():
                     print("-"*38)
                 ask_and_copy(password)
         elif choice == "2":
-            view_saved_passwords()
+            if get_lock_password:
+                view_saved_passwords()
+            else:
+                print("Sorry you can't passwords!!")
         elif choice == "3":
-            delete_saved_password()
+            if get_lock_password():
+                delete_saved_password()
+            else:
+                print("Can't delete password!!")
         
         elif choice == "4":
-              if password:
-                 ask_and_copy(password)
-              else:
-                 print("Generate a password first.")
+            if password is not None:
+                ask_and_copy(password)
+            else:
+                print("Generate a password first.")
         elif choice == "5":
-            copy_saved_password()
+            if get_lock_password:
+                copy_saved_password()
+            else:
+                print("Wrong password,can't copy passwords!!")    
         elif choice == "6":
             print("Exiting the program.")
             break

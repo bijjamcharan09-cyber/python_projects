@@ -1,0 +1,2 @@
+P1,Charan,Bowler,100,4,0
+P2,Virat,Batsman,0,0,0

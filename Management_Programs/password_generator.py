@@ -1,7 +1,9 @@
 import random as rd
 import string as st
 import pyperclip
+import os 
 
+LOCK_FILE = "data/lock.txt"
 def get_userappname(): #This function prompts the user to enter a userappname and returns it.
     userappname = input("Enter userappname: ").capitalize()
     return userappname
@@ -10,13 +12,91 @@ def get_username(): #This function prompts the user to enter a username and retu
     username = input("Enter username: ")
     return username
 
-def get_lock_password(): #This function prompts the user to enter password.
-    user_password = "91173088"
-    entered_password = input("Enter password:")
-    if user_password == entered_password:
+def setup_lock():
+    if not os.path.exists(LOCK_FILE):
+
+        print("----- First Time Setup -----")
+
+        while True:
+            password = input("Create a lock password: ")
+            confirm = input("Confirm password: ")
+
+            if password == confirm:
+                with open(LOCK_FILE, "w") as file:
+                    file.write(password)
+
+                print("Lock password created successfully.")
+                break
+
+            else:
+                print("Passwords do not match. Try again.")
+
+def set_lock_password():
+
+    if not get_lock_password():
+        print("Wrong current password!")
+        return
+
+    while True:
+        new_password = input("Enter new lock password: ")
+        confirm_password = input("Confirm new lock password: ")
+
+        if new_password != confirm_password:
+            print("Passwords do not match. Try again.\n")
+            continue
+
+        if len(new_password) < 6:
+            print("Password must be at least 6 characters long.\n")
+            continue
+
+        with open(LOCK_FILE, "w") as file:
+            file.write(new_password)
+
+        print("Lock password updated successfully.")
+        break
+
+def get_lock_password():
+
+    with open(LOCK_FILE, "r") as file:
+        saved_password = file.read().strip()
+
+    entered_password = input("Enter lock password: ")
+
+    if entered_password == saved_password:
         return True
-    else:
-        return False
+
+    print("Incorrect password!")
+
+    choice = input("Forgot password? (y/n): ").lower()
+
+    if choice == "y":
+        reset_lock_password()
+
+    return False
+
+def reset_lock_password():
+
+    print("----- Reset Lock Password -----")
+
+    answer = input("What is your favorite color? ").lower()
+
+    if answer != "blue":          # Your security answer
+        print("Security answer is incorrect.")
+        return
+
+    while True:
+        new_password = input("Enter new lock password: ")
+        confirm_password = input("Confirm new lock password: ")
+
+        if new_password != confirm_password:
+            print("Passwords do not match.")
+            continue
+
+        with open(LOCK_FILE, "w") as file:
+            file.write(new_password)
+
+        print("Lock password reset successfully.")
+        break
 
 def get_password_options(): #This function prompts the user to enter password options and returns them.
     length = int(input("Enter password length: "))
@@ -142,6 +222,59 @@ def view_saved_passwords():
     except FileNotFoundError:
         print("No saved passwords found.")
 
+def update_saved_password():
+    if not get_lock_password():
+        print("Wrong password! Access denied.")
+        return
+
+    appname = input("Enter app name to update: ").lower()
+
+    try:
+        with open("data/passwords.txt", "r") as file:
+            lines = file.readlines()
+
+        found = False
+
+        with open("data/passwords.txt", "w") as file:
+            for line in lines:
+                parts = line.strip().split("|")
+
+                if len(parts) != 3:
+                    file.write(line)
+                    continue
+
+                saved_app = parts[0].lower()
+
+                if saved_app == appname:
+                    print("\nGenerate a new password")
+
+                    length, include_numbers, include_symbols, _ = get_password_options()
+
+                    new_password = generate_password(
+                        length,
+                        include_numbers,
+                        include_symbols
+                    )
+
+                    strength = check_strength(new_password)
+
+                    file.write(
+                        f"{parts[0]}|{parts[1]}|{new_password} ({strength})\n"
+                    )
+
+                    print("Password updated successfully.")
+                    display_password(parts[0], parts[1], new_password, strength)
+
+                    found = True
+                else:
+                    file.write(line)
+
+        if not found:
+            print("App not found.")
+
+    except FileNotFoundError:
+        print("No saved passwords found.")
+
 def delete_saved_password():
     userappname = input("Enter app name to delete: ").lower()
 
@@ -242,18 +375,21 @@ def copy_saved_password():
         print("Please enter a valid number.")
 
 def main():
+   setup_lock()
    password = None
    while True:
         
         print("-"*18 + "\nPassword Generator\n" + "-"*18)
         print("1. Generate Password")
         print("2. View Saved Passwords")
-        print("3. Delete Saved Password")
-        print("4. Copy to clipboard")
-        print("5. Copy saved passwords")
-        print("6. Exit")
+        print("3. Update password")
+        print("4. Delete Saved Password")
+        print("5. Copy to clipboard")
+        print("6. Copy saved passwords")
+        print("7. Update password")
+        print("8. Exit")
 
-        choice = input("Enter your choice (1-6): ")
+        choice = input("Enter your choice (1-7): ")
 
         if choice == "1":
             userappname = get_userappname()
@@ -278,22 +414,29 @@ def main():
             else:
                 print("Sorry you can't passwords!!")
         elif choice == "3":
+            if get_lock_password:
+                update_saved_password()
+            else:
+                print("Access denied")
+        elif choice == "4":
             if get_lock_password():
                 delete_saved_password()
             else:
                 print("Can't delete password!!")
         
-        elif choice == "4":
+        elif choice == "5":
             if password is not None:
                 ask_and_copy(password)
             else:
                 print("Generate a password first.")
-        elif choice == "5":
+        elif choice == "6":
             if get_lock_password:
                 copy_saved_password()
             else:
                 print("Wrong password,can't copy passwords!!")    
-        elif choice == "6":
+        elif choice == "7":
+            set_lock_password()
+        elif choice == "8":
             print("Exiting the program.")
             break
         else:
@@ -301,6 +444,9 @@ def main():
 
 if __name__ == "__main__":
     try:
-        main()
+        if get_lock_password():
+            main()
+        else:
+            print("Access denied!!")
     except KeyboardInterrupt:
         print("\nProgram interrupted.")

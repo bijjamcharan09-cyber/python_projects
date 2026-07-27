@@ -386,10 +386,10 @@ def main():
         print("4. Delete Saved Password")
         print("5. Copy to clipboard")
         print("6. Copy saved passwords")
-        print("7. Update password")
+        print("7. Update lock")
         print("8. Exit")
 
-        choice = input("Enter your choice (1-7): ")
+        choice = input("Enter your choice (1-8): ")
 
         if choice == "1":
             userappname = get_userappname()

@@ -16,6 +16,7 @@ Welcome to my **Python Projects Collection**! This repository contains beginner-
 | 📒 **Contact Book** | Store and manage contact information. | Add, search, update, delete contacts |
 | 🎓 **Student Manager** | Manage student records. | Add, search, update, delete student records |
 | 📚 **Library Management** | Manage library books. | Add, view, search, issue, return, delete books |
+| 🏏 **Cricket_Management** | Manage player records. | Add, search, update, delete, adding match performance of players |
 
 ---
 
@@ -39,7 +40,9 @@ The following files are used to store application data:
 - 📄 books.txt
 - 📄 contacts.txt
 - 📄 expenses.txt
+- 📄 lock.txt
 - 📄 passwords.txt
+- 📄 players.txt
 - 📄 student.txt
 - 📄 to_do.txt
 
@@ -80,7 +83,9 @@ Python-Projects/
 │   ├── books.txt
 │   ├── contacts.txt
 │   ├── expenses.txt
+|   ├── lock.txt
 │   ├── passwords.txt
+|   ├── players.txt
 │   ├── student.txt
 │   └── to_do.txt
 │
@@ -119,6 +124,10 @@ python Management_Programs/Library_Management.py
 
 ```bash
 python basic_programs/ci_si.py
+```
+
+```bash
+python basic_programs/calculator.py
 ```
 
 ---

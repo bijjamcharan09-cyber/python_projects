@@ -2,15 +2,22 @@ import random as rd
 import string as st
 import pyperclip
 import os 
+import sqlite3
+connection = sqlite3.connect("data/password_manager.db")
+cursor = connection.cursor()
+
+cursor.execute("""CREATE TABLE IF NOT EXISTS passwords (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    app_name TEXT NOT NULL,
+    username TEXT NOT NULL,
+    password TEXT NOT NULL,
+    strength TEXT NOT NULL
+    )
+    """
+)
+connection.commit()
 
 LOCK_FILE = "data/lock.txt"
-def get_userappname(): #This function prompts the user to enter a userappname and returns it.
-    userappname = input("Enter userappname: ").capitalize()
-    return userappname
-
-def get_username(): #This function prompts the user to enter a username and returns it.
-    username = input("Enter username: ")
-    return username
 
 def setup_lock():
     if not os.path.exists(LOCK_FILE):
@@ -98,12 +105,20 @@ def reset_lock_password():
         print("Lock password reset successfully.")
         break
 
+def get_userappname(): #This function prompts the user to enter a userappname and returns it.
+    userappname = input("Enter userappname: ").capitalize()
+    return userappname
+
+def get_username(): #This function prompts the user to enter a username and returns it.
+    username = input("Enter username: ")
+    return username
+
 def get_password_options(): #This function prompts the user to enter password options and returns them.
     length = int(input("Enter password length: "))
 
-    include_numbers = input("Include numbers? (yes/no): ").lower()
+    include_numbers = input("Include numbers? (y/n): ").lower()
 
-    include_symbols = input("Include symbols? (yes/no): ").lower()
+    include_symbols = input("Include symbols? (y/n): ").lower()
 
     password_count = int(input("How many passwords do you want to generate? "))
 
@@ -118,11 +133,11 @@ def generate_password(length, include_numbers, include_symbols): #This function 
         rd.choice(st.ascii_lowercase)
     ]
 
-    if include_numbers == "yes":
+    if include_numbers == "y":
         characters += st.digits
         password.append(rd.choice(st.digits))
 
-    if include_symbols == "yes":
+    if include_symbols == "y":
         characters += st.punctuation
         password.append(rd.choice(st.punctuation.replace("|", "")))
 
@@ -165,11 +180,13 @@ def check_strength(password):
 
 def save_to_file(userappname, username, password, strength):
 
-    file = open("data/passwords.txt", "a")
+    cursor.execute("""
+    INSERT INTO passwords(app_name, username, password, strength)
+    VALUES (?, ?, ?, ?)
+    """, (userappname, username, password, strength))
+    print("Password saved successfully.")
 
-    file.write(f"{userappname}|{username}|{password} ({strength})\n")
-
-    file.close()
+    connection.commit()
 
 def display_password(userappname, username, password, strength):
 
@@ -180,144 +197,116 @@ def display_password(userappname, username, password, strength):
     print("Strength :", strength)
 
 def view_saved_passwords():
-    get_lock_password()
-    try:
 
-        with open("data/passwords.txt", "r") as file:
+    if not get_lock_password():
+        return
 
-            print("\n----- Saved Passwords -----\n")
+    cursor.execute("SELECT * FROM passwords")
 
-            count = 1
+    rows = cursor.fetchall()
 
-            for line in file:
+    if not rows:
+        print("No saved passwords.")
+        return
 
-                line = line.strip()
+    print("\n----- Saved Passwords -----\n")
 
-                if not line:
-                    continue
+    for row in rows:
 
-                parts = line.split("|")
+        id, appname, username, password, strength = row
 
-                if len(parts) != 3:
-                    print("Invalid entry:", line)
-                    continue
-
-                appname = parts[0]
-                username = parts[1]
-
-                password = parts[2].split(" (")[0]
-                strength = parts[2].split("(")[1].replace(")", "")
-
-                print(f"{count}. App Name : {appname}")
-                print(f"   Username : {username}")
-                print(f"   Password : {password}")
-                print(f"   Strength : {strength}\n")
-
-                count += 1
-                print("-"*25)
-
-            if count == 1:
-                print("No saved passwords.")
-
-    except FileNotFoundError:
-        print("No saved passwords found.")
+        print(f"{id}. App Name : {appname}")
+        print(f"   Username : {username}")
+        print(f"   Password : {password}")
+        print(f"   Strength : {strength}")
+        print("-" * 25)
 
 def update_saved_password():
+
     if not get_lock_password():
-        print("Wrong password! Access denied.")
+        print("Access denied.")
         return
 
     appname = input("Enter app name to update: ").lower()
 
-    try:
-        with open("data/passwords.txt", "r") as file:
-            lines = file.readlines()
+    cursor.execute(
+        "SELECT * FROM passwords WHERE LOWER(app_name)=?",
+        (appname,)
+    )
 
-        found = False
+    row = cursor.fetchone()
 
-        with open("data/passwords.txt", "w") as file:
-            for line in lines:
-                parts = line.strip().split("|")
+    if row is None:
+        print("App not found.")
+        return
 
-                if len(parts) != 3:
-                    file.write(line)
-                    continue
+    print("\nGenerate a new password")
 
-                saved_app = parts[0].lower()
+    length, include_numbers, include_symbols, _ = get_password_options()
 
-                if saved_app == appname:
-                    print("\nGenerate a new password")
+    new_password = generate_password(
+        length,
+        include_numbers,
+        include_symbols
+    )
 
-                    length, include_numbers, include_symbols, _ = get_password_options()
+    strength = check_strength(new_password)
 
-                    new_password = generate_password(
-                        length,
-                        include_numbers,
-                        include_symbols
-                    )
+    cursor.execute("""
+    UPDATE passwords
+    SET password=?, strength=?
+    WHERE LOWER(app_name)=?
+    """, (new_password, strength, appname))
 
-                    strength = check_strength(new_password)
+    connection.commit()
 
-                    file.write(
-                        f"{parts[0]}|{parts[1]}|{new_password} ({strength})\n"
-                    )
+    print("Password updated successfully.")
 
-                    print("Password updated successfully.")
-                    display_password(parts[0], parts[1], new_password, strength)
-
-                    found = True
-                else:
-                    file.write(line)
-
-        if not found:
-            print("App not found.")
-
-    except FileNotFoundError:
-        print("No saved passwords found.")
+    display_password(row[1], row[2], new_password, strength)
 
 def delete_saved_password():
-    userappname = input("Enter app name to delete: ").lower()
 
-    found = False
+    appname = input("Enter app name to delete: ").lower()
 
-    with open("data/passwords.txt", "r") as file:
-        lines = file.readlines()
+    cursor.execute(
+        "SELECT * FROM passwords WHERE LOWER(app_name)=?",
+        (appname,)
+    )
 
-    with open("data/passwords.txt", "w") as file:
-        for line in lines:
-            parts = line.strip().split("|")
+    if cursor.fetchone() is None:
+        print("App not found.")
+        return
 
-            if len(parts) != 3:
-                continue
+    cursor.execute(
+        "DELETE FROM passwords WHERE LOWER(app_name)=?",
+        (appname,)
+    )
 
-            saved_app = parts[0].lower()
+    connection.commit()
 
-            if saved_app != userappname:
-                file.write(line)
-            else:
-                found = True
+    print("Password deleted successfully.")
 
-    if found:
-        print("Password(s) deleted successfully.")
+def copy_generated_password(password):
+
+    choice = input("Copy generated password? (y/n): ").lower()
+
+    if choice == "y":
+
+        try:
+            pyperclip.copy(password)
+            print("Password copied successfully.")
+
+        except Exception as e:
+            print("Clipboard error:", e)
+
     else:
-        print("App name not found.")
-
-def copy_to_clipboard(text):
-    try:
-        pyperclip.copy(text)
-        print("-"*30)
-        print("Password copied to clipboard.")
-        print("-"*30)
-    except Exception as e:
-        print("-"*20)
-        print("Error copying to clipboard:",e)
-        print("-"*20)
+        print("Copy skipped.")
 
 def ask_and_copy(password):
-    choice = input("Copy password to clipboard? (yes(y)/no(n)): ").lower()
+    choice = input("Copy password to clipboard? (y/n): ").lower()
 
     if choice == "yes" or choice == "y":
-        copy_to_clipboard(password)
+        copy_generated_password(password)
     else:
         print("-"*12)
         print("Copy skipped.")
@@ -325,53 +314,47 @@ def ask_and_copy(password):
 
 
 def copy_saved_password():
-    get_lock_password()
+
+    if not get_lock_password():
+        return
+
+    cursor.execute(
+        "SELECT id, app_name, username FROM passwords"
+    )
+
+    rows = cursor.fetchall()
+
+    if not rows:
+        print("No saved passwords.")
+        return
+
+    print("\n----- Saved Passwords -----")
+
+    for row in rows:
+
+        print(f"{row[0]}. App: {row[1]} | Username: {row[2]}")
 
     try:
 
-        with open("data/passwords.txt", "r") as file:
-            lines = file.readlines()
+        password_id = int(input("\nEnter password ID: "))
 
-        if not lines:
-            print("No saved passwords found.")
-            return
+        cursor.execute(
+            "SELECT password FROM passwords WHERE id=?",
+            (password_id,)
+        )
 
-        print("\n----- Saved Passwords -----")
+        result = cursor.fetchone()
 
-        valid = []
+        if result:
 
-        for line in lines:
-
-            line = line.strip()
-
-            if not line:
-                continue
-
-            parts = line.split("|")
-
-            if len(parts) != 3:
-                continue
-
-            valid.append(parts)
-
-        for i, parts in enumerate(valid, start=1):
-            print(f"{i}. App: {parts[0]} | Username: {parts[1]}")
-
-        index = int(input("\nEnter password index: "))
-
-        if 1 <= index <= len(valid):
-
-            password = valid[index-1][2].split(" (")[0]
-
-            copy_to_clipboard(password)
+            copy_generated_password(result[0])
 
         else:
-            print("Invalid index.")
 
-    except FileNotFoundError:
-        print("No saved passwords found.")
+            print("Invalid ID.")
 
     except ValueError:
+
         print("Please enter a valid number.")
 
 def main():
@@ -407,7 +390,7 @@ def main():
                     print("-"*38)
                     print("Thank you for using password generator")
                     print("-"*38)
-                ask_and_copy(password)
+                copy_generated_password(password)
         elif choice == "2":
             if get_lock_password:
                 view_saved_passwords()

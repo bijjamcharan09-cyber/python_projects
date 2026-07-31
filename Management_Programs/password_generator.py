@@ -3,7 +3,8 @@ import string as st
 import pyperclip
 import os 
 import sqlite3
-connection = sqlite3.connect("data/password_manager.db")
+from cryptography.fernet import Fernet
+connection = sqlite3.connect("data/passwords_manager.db")
 cursor = connection.cursor()
 
 cursor.execute("""CREATE TABLE IF NOT EXISTS passwords (
@@ -105,6 +106,17 @@ def reset_lock_password():
         print("Lock password reset successfully.")
         break
 
+with open("data/key.key", "rb") as f:
+    KEY = f.read()
+
+cipher = Fernet(KEY)
+
+def encrypt_password(password):
+    return cipher.encrypt(password.encode()).decode()
+
+def decrypt_password(encrypted_password):
+    return cipher.decrypt(encrypted_password.encode()).decode()
+
 def get_userappname(): #This function prompts the user to enter a userappname and returns it.
     userappname = input("Enter userappname: ").capitalize()
     return userappname
@@ -114,7 +126,10 @@ def get_username(): #This function prompts the user to enter a username and retu
     return username
 
 def get_password_options(): #This function prompts the user to enter password options and returns them.
-    length = int(input("Enter password length: "))
+    try:
+        length = int(input("Length: "))
+    except ValueError:
+        print("Invalid input")
 
     include_numbers = input("Include numbers? (y/n): ").lower()
 
@@ -132,6 +147,16 @@ def generate_password(length, include_numbers, include_symbols): #This function 
         rd.choice(st.ascii_uppercase),
         rd.choice(st.ascii_lowercase)
     ]
+    minimum = 2
+
+    if include_numbers == "y":
+        minimum += 1
+
+    if include_symbols == "y":
+        minimum += 1
+
+    if length < minimum:
+        print("Password length too short.")
 
     if include_numbers == "y":
         characters += st.digits
@@ -179,11 +204,12 @@ def check_strength(password):
         return "Weak"
 
 def save_to_file(userappname, username, password, strength):
+    encrypted_password = encrypt_password(password)
 
     cursor.execute("""
     INSERT INTO passwords(app_name, username, password, strength)
     VALUES (?, ?, ?, ?)
-    """, (userappname, username, password, strength))
+    """, (userappname, username, encrypted_password, strength))
     print("Password saved successfully.")
 
     connection.commit()
@@ -198,8 +224,6 @@ def display_password(userappname, username, password, strength):
 
 def view_saved_passwords():
 
-    if not get_lock_password():
-        return
 
     cursor.execute("SELECT * FROM passwords")
 
@@ -214,6 +238,7 @@ def view_saved_passwords():
     for row in rows:
 
         id, appname, username, password, strength = row
+        password = decrypt_password(password)
 
         print(f"{id}. App Name : {appname}")
         print(f"   Username : {username}")
@@ -249,6 +274,7 @@ def update_saved_password():
         include_numbers,
         include_symbols
     )
+    encrypted_password = encrypt_password(new_password)
 
     strength = check_strength(new_password)
 
@@ -256,7 +282,7 @@ def update_saved_password():
     UPDATE passwords
     SET password=?, strength=?
     WHERE LOWER(app_name)=?
-    """, (new_password, strength, appname))
+    """, (encrypted_password, strength, appname))
 
     connection.commit()
 
@@ -347,7 +373,8 @@ def copy_saved_password():
 
         if result:
 
-            copy_generated_password(result[0])
+            password = decrypt_password(result[0])
+            copy_generated_password(password)
 
         else:
 
@@ -392,12 +419,12 @@ def main():
                     print("-"*38)
                 copy_generated_password(password)
         elif choice == "2":
-            if get_lock_password:
+            if get_lock_password():
                 view_saved_passwords()
             else:
                 print("Sorry you can't passwords!!")
         elif choice == "3":
-            if get_lock_password:
+            if get_lock_password():
                 update_saved_password()
             else:
                 print("Access denied")
@@ -413,7 +440,7 @@ def main():
             else:
                 print("Generate a password first.")
         elif choice == "6":
-            if get_lock_password:
+            if get_lock_password():
                 copy_saved_password()
             else:
                 print("Wrong password,can't copy passwords!!")    
@@ -427,9 +454,8 @@ def main():
 
 if __name__ == "__main__":
     try:
-        if get_lock_password():
-            main()
-        else:
-            print("Access denied!!")
+        main()
     except KeyboardInterrupt:
         print("\nProgram interrupted.")
+    finally:
+        connection.close()

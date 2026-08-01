@@ -4,7 +4,7 @@ import pyperclip
 import os 
 import sqlite3
 from cryptography.fernet import Fernet
-connection = sqlite3.connect("data/passwords_manager.db")
+connection = sqlite3.connect("data/passwords.db")
 cursor = connection.cursor()
 
 cursor.execute("""CREATE TABLE IF NOT EXISTS passwords (

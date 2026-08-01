@@ -4,7 +4,7 @@ import pyperclip
 import os 
 import sqlite3
 from cryptography.fernet import Fernet
-connection = sqlite3.connect("data/passwords.db")
+connection = sqlite3.connect("data/passwords_vault.db")
 cursor = connection.cursor()
 
 cursor.execute("""CREATE TABLE IF NOT EXISTS passwords (
@@ -106,7 +106,7 @@ def reset_lock_password():
         print("Lock password reset successfully.")
         break
 
-with open("data/key.key", "rb") as f:
+with open("data/lock.key", "rb") as f:
     KEY = f.read()
 
 cipher = Fernet(KEY)
